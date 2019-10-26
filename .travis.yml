@@ -1,0 +1,180 @@
+language: c
+
+os:
+  - linux
+  - osx
+
+compiler:
+  - gcc
+  - clang
+
+env:
+  matrix:
+    # linux
+    - CONFIGURE_FLAGS="--with-gcu --without-x11 --without-sdl --without-sdl2" SDL="0"
+    - CONFIGURE_FLAGS="--with-gcu --with-x11    --without-sdl --without-sdl2" SDL="0"
+    - CONFIGURE_FLAGS="--with-gcu --without-x11 --with-sdl    --without-sdl2" SDL="1"
+    - CONFIGURE_FLAGS="--with-gcu --without-x11 --without-sdl --with-sdl2" SDL="2"
+    # osx
+    - CONFIGURE_FLAGS="--without-gcu --without-x11 --without-crb --with-sdl    --without-sdl2" SDL="1"
+    - CONFIGURE_FLAGS="--without-gcu --without-x11 --without-crb --without-sdl --with-sdl2" SDL="2"
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "CKGAr6u7bUGQXloM0aLzlQZ8ONc2rPDpy/fsH1qIHfG6YcT4vxcBgMPUuY7MxJBwYj8koni36n7kAbq5DLKJRydKm3D4VIUjN2A9PFYCPWmL7a0eLqg4CfaLQNEgJlTotiEse/ytHCZr5zrCVA6LaCzHKMS2aHF+MYwuAYJYFXxU4MIGv0kAKle2CTC+SfrV8VnaCEI1tMiEMy6zZvxInruEQMrsY88iiHPX3Lryfs/gpHSuDDM0F3RKKZ1gKIsE+MAxf45xi7J7IPqPr+vlfIogUFpG+Em9OwXO4oy2phjtf9KwOYEdgyjEGULFh4jEy6w7i12A1pvcFwQR+zRc2782iY44JhaGmBjUtwYCG1J/n65FgujjbYDtBlaUlEhx2xDwjQ/ANOXjWEox/BWqEtmA3yXhCS2gEIQKlHfwcJpBUNvLNf25dSjvVI8se/lLv/U4Io4xLSljwIB/PWvTRH9VvB0QHd9SrFFunpUcdA9hTSYrqI5QodGc2UtR1/UJjCfZWGwCYc+zQZ9BBsXxhDfQHg7D0Q50IpItT31movzF6LlVRUWc2IDaLKUlK+YdtsSc4ovfFKE1DuJ3JKosTz0a6OrDOx3iL7Y72brQrWejhnnNtN1Xu82IsvTXAoQBJQKUphsX0YFT3TkaDgMKKPAcvgHbY/HzEHMpoXlbgAo="
+
+matrix:
+  exclude:
+    - os: linux
+      env: CONFIGURE_FLAGS="--without-gcu --without-x11 --without-crb --with-sdl    --without-sdl2" SDL="1"
+    - os: linux
+      env: CONFIGURE_FLAGS="--without-gcu --without-x11 --without-crb --without-sdl --with-sdl2" SDL="2"
+    - os: osx
+      env: CONFIGURE_FLAGS="--with-gcu --without-x11 --without-sdl --without-sdl2" SDL="0"
+    - os: osx
+      env: CONFIGURE_FLAGS="--with-gcu --with-x11    --without-sdl --without-sdl2" SDL="0"
+    - os: osx
+      env: CONFIGURE_FLAGS="--with-gcu --without-x11 --with-sdl    --without-sdl2" SDL="1"
+    - os: osx
+      env: CONFIGURE_FLAGS="--with-gcu --without-x11 --without-sdl --with-sdl2" SDL="2"
+  include:
+    - language: android
+      dist: trusty
+      jdk: oraclejdk8
+      compiler: "" # Remove desktop compiler
+      env: BUILDING_FOR_ANDROID="YES" SDL="2"
+      addons: [ ] # remove addons?
+      android:
+        components:
+          - tools
+          - android-26
+          - build-tools-28.0.2
+      install:
+        - echo y | sdkmanager "ndk-bundle"
+      before_script:
+        - export ANDROID_NDK_HOME=$ANDROID_HOME/ndk-bundle
+        - export SDL_VERSION="2.0.10"
+        - export SDL_TTF_VERSION="2.0.15"
+        - cd build/asgradle
+        - wget https://libsdl.org/release/SDL2-${SDL_VERSION}.tar.gz
+        - tar -xzf SDL2-${SDL_VERSION}.tar.gz
+        - cp -r SDL2-${SDL_VERSION}/android-project/gradle .
+        - mv SDL2-${SDL_VERSION} mangclient/jni/SDL2
+        - wget https://libsdl.org/tmp/SDL_ttf/release/SDL2_ttf-${SDL_TTF_VERSION}.tar.gz
+        - tar -xzf SDL2_ttf-${SDL_TTF_VERSION}.tar.gz
+        - mv SDL2_ttf-${SDL_TTF_VERSION} mangclient/jni/SDL2_ttf
+        - ln -s ../../../../../../lib mangclient/src/main/assets/lib
+      script:
+        - ./gradlew build connectedCheck assembleDebug assembleRelease
+      before_deploy:
+        - cp mangclient/build/outputs/apk/debug/mangclient-debug.apk ../../.
+        - cp mangclient/build/outputs/apk/release/mangclient-release-unsigned.apk ../../.
+        - rm -rf mangclient # kill temp files
+        - ./.travis-gh.sh > ../../index.html
+
+    - language: objective-c
+      os: osx
+      osx_image: xcode9.4
+      compiler: ""
+      env: BUILDING_FOR_IOS="YES" SDL="2s" # "2s" instead of "2" to skip homebrew
+      before_script:
+        - export SDL_VERSION="2.0.10"
+        - export SDL_TTF_VERSION="2.0.15"
+        - cd ..
+        - curl -O https://libsdl.org/release/SDL2-${SDL_VERSION}.tar.gz
+        - tar -xzf SDL2-${SDL_VERSION}.tar.gz
+        # Our xcode project expects to find "SDL" dir, not "SDL2-2.X.Y"
+        - mv SDL2-${SDL_VERSION} SDL
+        - curl -O https://libsdl.org/tmp/SDL_ttf/release/SDL2_ttf-${SDL_TTF_VERSION}.tar.gz
+        - tar -xzf SDL2_ttf-${SDL_TTF_VERSION}.tar.gz
+        # Same for SDL2_ttf, let's strip away version number
+        - mv SDL2_ttf-${SDL_TTF_VERSION} SDL2_ttf
+        - cd -
+        - cd build/xcode-ios
+      script:
+        - xcodebuild -project mangclient-ios.xcodeproj
+          -scheme "libSDL-iOS" CONFIGURATION_BUILD_DIR="./build/Release-iphoneos"
+          && xcodebuild -project mangclient-ios.xcodeproj
+          -scheme "libSDL_ttf-iOS" CONFIGURATION_BUILD_DIR="./build/Release-iphoneos"
+          && xcodebuild -project mangclient-ios.xcodeproj build
+          CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED="NO"
+          CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED="NO"
+
+addons:
+  apt:
+    packages:
+    - libsdl1.2-dev
+    - libsdl-ttf2.0-dev
+    - libsdl2-dev
+    - libsdl2-ttf-dev
+#  homebrew:
+#    packages:
+#    - sdl
+#    - sdl_ttf
+#    - sdl2
+#    - sdl2_ttf
+#    update: false
+  coverity_scan:
+    project:
+      name: "mangband/mangband"
+      description: "Build submitted via Travis CI"
+    notification_email: team@mangband.org
+    build_command_prepend: "./autogen.sh -n; ./configure; make clean"
+    build_command: "make"
+    branch_pattern: coverity_scan
+
+before_install:
+#  - if [[ "$TRAVIS_OS_NAME" == "osx" ]] && [[ "$SDL" == "1" ]]; then brew update     ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]] && [[ "$SDL" == "1" ]]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install sdl; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]] && [[ "$SDL" == "1" ]]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install sdl_ttf; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "osx" ]] && [[ "$SDL" == "2" ]]; then brew update     ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]] && [[ "$SDL" == "2" ]]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install sdl2; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]] && [[ "$SDL" == "2" ]]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install sdl2_ttf; fi
+
+script:
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./autogen.sh -n && ./configure ${CONFIGURE_FLAGS} && make ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./dist/dmg/dmgit.sh && ./dist/dmg/dmgserv.sh ; fi
+
+before_deploy:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./dist/dmg/.travis-gh.sh > index.html ; fi
+
+deploy:
+  - provider: pages
+    skip-cleanup: true
+    keep-history: false
+    repo: mangband/mangband-builds-osx
+    branch: gh-pages
+    github-token: $GITHUB_TOKEN
+    on:
+      branch: develop
+      condition: $TRAVIS_OS_NAME == "osx") && ($CC == "gcc"
+
+  - provider: pages
+    skip-cleanup: true
+    keep-history: false
+    repo: mangband/mangband-builds-android
+    branch: gh-pages
+    github-token: $GITHUB_TOKEN
+    on:
+      branch: develop
+      condition: $BUILDING_FOR_ANDROID == "YES"
+
+  - provider: releases
+    skip-cleanup: true
+    keep-history: false
+    api_key: $GITHUB_TOKEN
+    file_glob: true
+    file: ./*.dmg
+    on:
+      tags: true
+      condition: $TRAVIS_OS_NAME == "osx") && ($CC == "gcc"
+
+  - provider: releases
+    skip-cleanup: true
+    keep-history: false
+    api_key: $GITHUB_TOKEN
+    file_glob: true
+    file: ./*.apk
+    on:
+      tags: true
+      condition: $BUILDING_FOR_ANDROID == "YES"

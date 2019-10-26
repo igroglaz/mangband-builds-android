@@ -1,0 +1,83 @@
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Libraries
+*.lib
+*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.hex
+
+# VisualStudio
+*.exp
+*.iobj
+*.ipdb
+*.pdb
+*.ncb
+*.suo
+*.ilk
+build/vs*/UpgradeLog.XML
+build/vs*/_UpgradeReport_Files/
+build/vs2008/*.vcproj.*
+build/vs*/*Debug*
+build/vs*/*Release*
+
+# Autotools
+Makefile
+Makefile.in
+autogen.sh.*
+aclocal.m4
+autom4te.cache/
+compile
+config.guess
+config.log
+config.status
+config.sub
+configure
+depcomp
+install-sh
+mangband
+mangclient
+missing
+**/.dirstamp
+**/.deps/
+src/config.h
+src/config.h.in
+src/stamp-h1
+
+# Unix redist files
+*.deb
+*.rpm
+*.tar.gz
+*.tar.xz
+
+# Common redist files
+lib/bone/*.txt
+lib/user/*.txt
+lib/data/*.raw
+lib/save/*
+!lib/save/server.*
+
+# Linux redist builds
+dist/tgz/version
+dist/deb/mangband-*
+dist/deb/mangband_*
+dist/rpm/*/
+
+# Local developer files
+*.patch
+*.orig
+*.rej
+*~ # backup files of my editor -flm

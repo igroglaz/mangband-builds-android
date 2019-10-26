@@ -1,0 +1,97 @@
+[MAngband]
+
+[SDL]
+
+[SDL-Fonts]
+0 misc6x13.hex
+1 nethack10x19-10.hex
+
+[SDL-Term-Angband]
+Visible 1
+Font nethack10x19-10.hex
+Cols 80
+Rows 24
+PositionX 0
+PositionY 0
+
+[SDL-Term-Mirror]
+Visible 1
+Font misc6x13.hex
+Cols 80
+Rows 24
+PositionX 0
+PositionY 456
+
+[SDL-Term-Recall]
+Visible 1
+Font misc6x13.hex
+Cols 80
+Rows 13
+PositionX 804
+PositionY 0
+
+[SDL-Term-Choice]
+Visible 1
+Font misc6x13.hex
+Cols 80
+Rows 24
+PositionX 801
+PositionY 171
+ScaleX 0
+ScaleY 0
+
+[SDL-Term-4]
+Visible 1
+Font misc6x13.hex
+Cols 80
+Rows 24
+PositionX 483
+PositionY 485
+
+[SDL-Term-5]
+Visible 0
+Cols 0
+Rows 0
+PositionX 0
+PositionY 0
+
+[SDL-Term-6]
+Visible 0
+Cols 0
+Rows 0
+PositionX 0
+PositionY 0
+
+[SDL-Term-7]
+Visible 0
+Cols 0
+Rows 0
+PositionX 0
+PositionY 0
+
+[SDL2]
+; term_mode may be: "window" or "virtual"
+term_mode=window
+; font_file is the default fallback font if "font_file is not declared in a window
+; font_file=font/AnonymousPro.ttf
+font_file=font/silm8x16.bmp
+; font_size is the fallback font size
+font_size=12
+
+[SDL2-window-0]
+title=MAngband
+pict_file=16x16.png
+font_size=16
+[SDL2-window-1]
+title=Character Sheet
+font_size=16
+[SDL2-window-2]
+title=Equipment
+[SDL2-window-3]
+title=Inventory
+[SDL2-window-4]
+title=Chat
+[SDL2-window-5]
+hidden=1
+[SDL2-window-6]
+hidden=1
